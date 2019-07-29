@@ -11,7 +11,7 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [ ]
+requirements = ['pyyaml']
 
 setup_requirements = ['pytest-runner', ]
 
@@ -27,7 +27,7 @@ setup(
         'Natural Language :: English',
         'Programming Language :: Python :: 3.7',
     ],
-    description="Persistable lists of files",
+    description="Persistable lists of paths",
     install_requires=requirements,
     license="MIT license",
     long_description=readme + '\n\n' + history,

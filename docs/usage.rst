@@ -34,6 +34,10 @@ You can then do the following
 
     selection.save()  # saves selection to .fileselection in root
 
+    # later on you can load a collection again
+    loaded = FileSelection.load('/myfiles')
+
+
 
 
 
