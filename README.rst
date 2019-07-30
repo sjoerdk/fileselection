@@ -20,17 +20,23 @@ fileselection
 
 
 
-Persistable lists of files
+Persistable lists of files. See usage for more info
 
 
 * Free software: MIT license
 * Documentation: https://fileselection.readthedocs.io.
 
 
-Features
---------
+Why?
+----
+This lib was developed for a situation in which a file-processing server is invoked on
+file selections. Users need to be able to make arbitrarily complex selections with any
+number of methods: using a command line interface, editing in a text editor, or a full
+GUI. The server processing order is unknown and it might take a long time before
+processing starts.
+FileSelection objects in folders make it possible to separate selection from server
+processing.
 
-* TODO
 
 Credits
 -------

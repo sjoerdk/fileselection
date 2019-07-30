@@ -1,0 +1,38 @@
+description:
+    Some description with € and some è and ç
+id: 9c527662-573a-43f4-9eef-1c8aa1125454
+selected_paths:
+- test1/kees/thing
+- test2/
+-   atab_is_badmaybe
+- Ба́бушка.txt
+
+- "emptyspace/above"
+- systemd-private-9cf6ba0dde284ef2a72a66d06db3d120-systemd-resolved.service-I5j1aF
+- tmpjrlcyhfa.py
+- test_heart_db.sql
+- .XIM-unix
+- +~JF15736833565115741233.tmp
+- .anonbatch
+- +~JF18053215478061814637.tmp
+- +~JF5499501060864089888.tmp
+- +~JF15074160241298192741.tmp
+- .log.txt.kate-swp
+- .font-unix
+- +~JF9572795516845814980.tmp
+- tmp8nbp21rn.py
+- kate.project.ctags.J28271
+- myplot.png
+- testdb.db
+- systemd-private-9cf6ba0dde284ef2a72a66d06db3d120-ModemManager.service-LByaPb
+- .ICE-unix
+- +~JF9609796442898888505.tmp
+- kate.project.ctags.J24674
+- .Test-unix
+- +~JF3610554225829693643.tmp
+- copied_template_5ft4g_kk/DicomAnonymizerFullDates/..index
+- copied_template_5ft4g_kk/DicomAnonymizerFullDates/..index/QuarantineIndex.lg
+- copied_template_5ft4g_kk/DicomAnonymizerFullDates/..index/QuarantineIndex.db
+- copied_template_5ft4g_kk/DicomAnonymizerFaultyFiles/..index
+- copied_template_5ft4g_kk/DicomAnonymizerFaultyFiles/..index/QuarantineIndex.lg
+- copied_template_5ft4g_kk/DicomAnonymizerFaultyFiles/..index/QuarantineIndex.db

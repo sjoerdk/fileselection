@@ -1,0 +1,6 @@
+description: Some description
+that just continues because why not? What's the problem?
+selected_paths:
+- test1
+-
+- test2

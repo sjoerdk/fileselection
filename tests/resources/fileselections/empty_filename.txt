@@ -1,0 +1,6 @@
+description: Some description
+id: 9c527662-573a-43f4-9eef-1c8aa1125454
+selected_paths:
+- test1
+-
+- test2

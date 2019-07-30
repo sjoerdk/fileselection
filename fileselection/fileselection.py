@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 """Main module."""
+import yaml
+
 from pathlib import Path
 from uuid import uuid4
-
-import yaml
+from yaml.scanner import ScannerError
 
 
 class YamlSavable:
@@ -153,7 +154,7 @@ class FileSelectionFile(YamlSavable):
             datafile=datafile,
             selection_id=dict_in["id"],
             description=dict_in["description"],
-            selected_paths=dict_in["selected_paths"],
+            selected_paths=[x for x in dict_in["selected_paths"] if x is not None],
         )
 
     @classmethod
@@ -177,9 +178,16 @@ class FileSelectionFile(YamlSavable):
         FileSelectionLoadError:
             If loading fails for any reason
         """
-
-        flat_dict = yaml.safe_load(f)
-        return cls.from_dict(dict_in=flat_dict, datafile=datafile)
+        try:
+            flat_dict = yaml.safe_load(f)
+        except ScannerError as e:
+            msg = f'Format error near line {e.problem_mark.line} in "{e.problem_mark.name}". original error: {e}'
+            raise FileSelectionLoadError(msg)
+        try:
+            return cls.from_dict(dict_in=flat_dict, datafile=datafile)
+        except KeyError as e:
+            msg = f'Expected to find line with "{e.args[0]}:" but could not find this in {datafile} original error: {e}'
+            raise FileSelectionLoadError(msg)
 
 
 class FileSelection:
@@ -227,7 +235,7 @@ class FileSelection:
         Absolute path to all files in this selection
 
         """
-        return [self.root_path/x for x in self.selected_paths]
+        return [self.root_path / x for x in self.selected_paths]
 
     def save(self):
         data = FileSelectionFile(
@@ -265,6 +273,12 @@ class FileSelection:
         ----------
         root_path: PathLike
             Folder to load fileselection from
+
+        Raises
+        ------
+        FileNotFoundError
+        When root_path cannot be found or no file selection is defined in root_path
+
 
         Returns
         -------

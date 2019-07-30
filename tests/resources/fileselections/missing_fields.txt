@@ -1,0 +1,5 @@
+description: Some description
+selected_paths:
+- test1
+-
+- test2

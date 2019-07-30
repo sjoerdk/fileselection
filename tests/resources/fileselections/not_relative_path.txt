@@ -1,0 +1,6 @@
+description: Some description
+id: 1234556
+selected_paths:
+- /tmp/other/path/file1
+- /tmp/other/path/file2
+
