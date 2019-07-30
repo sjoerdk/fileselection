@@ -59,11 +59,13 @@ class YamlSavable:
         return cls.from_dict(dict_in=flat_dict)
 
 
-class FileSelection(YamlSavable):
-    """ A list of relative file paths that can be saved to disk
+class FileSelectionFile(YamlSavable):
+    """ A list of relative file selected_paths that can be saved to a file
     """
 
-    def __init__(self, datafile, description='', selection_id=None, paths=None):
+    def __init__(
+        self, datafile, description="", selected_paths=None, selection_id=None
+    ):
         """
 
         Parameters
@@ -72,10 +74,10 @@ class FileSelection(YamlSavable):
             path to the file where this file selection is stored
         description: str, optional
             Human readable description of this file selection. Defaults to empty string
+        selected_paths: List[PathLike], optional
+            list of file selected_paths that are selected. Will be saved relative to datafile. Defaults to empty list
         selection_id: str, optional
             unique id for this selection. Defaults to uuid4
-        paths: List[PathLike], optional
-            list of file paths that are selected. Will be saved relative to datafile. Defaults to empty list
         """
         if selection_id:
             self.id = selection_id
@@ -83,38 +85,42 @@ class FileSelection(YamlSavable):
             self.id = str(uuid4())
         self.datafile = Path(datafile)
         self.description = description
-        if not paths:
-            paths = []
-        self.paths = self.make_relative([x for x in map(Path, paths)])  # convert to Path and make relative
+        if not selected_paths:
+            selected_paths = []
+        self.selected_paths = self.make_relative(
+            [x for x in map(Path, selected_paths)]
+        )  # convert to Path and make relative
 
     def make_relative(self, paths):
-        """Make all given paths relative to this selections datafile. Raise exception if this seems to be not possible
+        """Make all given selected_paths relative to this selections datafile. Raise exception if this seems to be not possible
 
         Parameters
         ----------
         paths: List[Path]
-            List of paths
+            List of selected_paths
 
 
         Returns
         -------
         List[Paths]
-            All input paths relative to datafile
+            All input selected_paths relative to datafile
 
         Raises
         ------
         NotRelativeToRootException
-            If any of the paths given is not relative to datafile
+            If any of the selected_paths given is not relative to datafile
 
 
         """
         relative_paths = []
         for path in paths:
-            if path.is_absolute():  # if this path is absolute, check whether it is within root path and make relative
+            if (
+                path.is_absolute()
+            ):  # if this path is absolute, check whether it is within root path and make relative
                 try:
-                    relative_paths.append(path.relative_to(self.datafile))
+                    relative_paths.append(path.relative_to(self.root_path))
                 except ValueError as e:
-                    msg = f"Any path in this selection should be relative to '{self.datafile}'. Exception: {str(e)}"
+                    msg = f"Any path in this selection should be relative to '{self.root_path}'. Exception: {str(e)}"
                     raise NotRelativeToRootException(msg)
             else:
                 relative_paths.append(path)  # if this path is relative, just add as is
@@ -133,21 +139,26 @@ class FileSelection(YamlSavable):
         str
 
         """
-        return {'id': self.id,
-                'description': self.description,
-                'paths': [x for x in map(str, self.paths)]  # map all paths to string to make yaml readable
-                }
+        return {
+            "id": self.id,
+            "description": self.description,
+            "selected_paths": [
+                x for x in map(str, self.selected_paths)
+            ],  # map all selected_paths to string to make yaml readable
+        }
 
     @classmethod
     def from_dict(cls, dict_in, datafile):
-        return cls(datafile=datafile,
-                   selection_id=dict_in['id'],
-                   description=dict_in['description'],
-                   paths=dict_in['paths'])
+        return cls(
+            datafile=datafile,
+            selection_id=dict_in["id"],
+            description=dict_in["description"],
+            selected_paths=dict_in["selected_paths"],
+        )
 
     @classmethod
     def load(cls, f, datafile):
-        """Overwrite base load to be able to add datafile location to the loaded FileSelection
+        """Overwrite base load to be able to add datafile location to the loaded FileSelectionFile
 
         Parameters
         ----------
@@ -158,7 +169,7 @@ class FileSelection(YamlSavable):
 
         Returns
         -------
-        FileSelection:
+        FileSelectionFile:
             Loaded from disk
 
         Raises
@@ -169,6 +180,105 @@ class FileSelection(YamlSavable):
 
         flat_dict = yaml.safe_load(f)
         return cls.from_dict(dict_in=flat_dict, datafile=datafile)
+
+
+class FileSelection:
+    """List of relative files in a certain folder. Can be saved and loaded.
+
+    Notes
+    -----
+    One abstraction level above FileSelectionFile. Makes three simplifying assumptions:
+    * Only one selection per folder. Filename id fixed
+    * Initialization: root_path fully determines which file selection to load
+    * Loading and saving is always file-based, no loading from file-like objects or streams
+
+    """
+
+    DATA_FILE_NAME = ".fileselection"
+
+    def __init__(
+        self, root_path, description="", selected_paths=None, selection_id=None
+    ):
+        """
+
+        Parameters
+        ----------
+        root_path: PathLike
+            All paths in this selection are relative to this folder
+        description: str, optional
+            Human readable description of this file selection. Defaults to empty string
+        selected_paths: List[PathLike], optional
+            list of file selected_paths that are selected. Will be saved relative to datafile. Defaults to empty list
+        selection_id: str, optional
+            unique id for this selection. Defaults to uuid4
+        """
+        self.root_path = Path(root_path)
+        self.description = description
+        self.selected_paths = [x for x in map(Path, selected_paths)]
+        self.id = selection_id
+
+    @property
+    def selected_paths_absolute(self):
+        """
+
+        Returns
+        -------
+        List[Path]
+        Absolute path to all files in this selection
+
+        """
+        return [self.root_path/x for x in self.selected_paths]
+
+    def save(self):
+        data = FileSelectionFile(
+            datafile=self.get_data_file_path(self.root_path),
+            description=self.description,
+            selected_paths=self.selected_paths,
+            selection_id=self.id,
+        )
+        with open(data.datafile, "w") as f:
+            data.save(f)
+        self.id = data.id
+
+    @classmethod
+    def get_data_file_path(cls, root_path):
+        """
+
+        Parameters
+        ----------
+        root_path: PathLike
+            Path in which the data file should be located
+
+        Returns
+        -------
+        Path:
+            Full path to the data file that stores the file selection info
+
+        """
+        return Path(root_path) / cls.DATA_FILE_NAME
+
+    @classmethod
+    def load(cls, root_path):
+        """
+
+        Parameters
+        ----------
+        root_path: PathLike
+            Folder to load fileselection from
+
+        Returns
+        -------
+        FileSelection
+        """
+        data_file_path = cls.get_data_file_path(root_path)
+        with open(data_file_path, "r") as f:
+            data = FileSelectionFile.load(f, data_file_path)
+        return cls(
+            root_path=root_path,
+            description=data.description,
+            selected_paths=data.selected_paths,
+            selection_id=data.id,
+        )
 
 
 class FileSelectionException(Exception):

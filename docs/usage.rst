@@ -4,7 +4,7 @@ Usage
 
 To use fileselection in a project::
 
-    from fileselection import FileSelection
+    from fileselection import FileSelectionFile
 
 
 
@@ -22,7 +22,7 @@ You can then do the following
 .. code-block:: console
 
     # intialise a fileselection in folder
-    selection = FileSelection('/myfiles', description='test')
+    selection = FileSelectionFile('/myfiles', description='test')
 
     selection.files
     >>> []
@@ -30,12 +30,12 @@ You can then do the following
     # add a path
     selection.add(['/myfiles/subdir/fileD'])
     selection.files
-    >>> ['/subdir/fileD']  # paths are always stored relative to collection root
+    >>> ['/subdir/fileD']  selected_paths
 
     selection.save()  # saves selection to .fileselection in root
 
     # later on you can load a collection again
-    loaded = FileSelection.load('/myfiles')
+    loaded = FileSelectionFile.load('/myfiles')
 
 
 

@@ -34,7 +34,7 @@ import fileselection
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
 
-# Add any paths that contain templates here, relative to this directory.
+# Add any selected_paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
@@ -67,8 +67,8 @@ release = fileselection.__version__
 # Usually you set "language" from the command line for these cases.
 language = None
 
-# List of patterns, relative to source directory, that match paths and
-# directories to ignore when looking for source paths.
+# List of patterns, relative to source directory, that match selected_paths and
+# directories to ignore when looking for source selected_paths.
 # This patterns also effect to html_static_path and html_extra_path
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
@@ -92,8 +92,8 @@ html_theme = 'alabaster'
 #
 # html_theme_options = {}
 
-# Add any paths that contain custom static paths (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static paths,
+# Add any selected_paths that contain custom static selected_paths (such as style sheets) here,
+# relative to this directory. They are copied after the builtin static selected_paths,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
@@ -124,7 +124,7 @@ latex_elements = {
     # 'figure_align': 'htbp',
 }
 
-# Grouping the document tree into LaTeX paths. List of tuples
+# Grouping the document tree into LaTeX selected_paths. List of tuples
 # (source start file, target name, title, author, documentclass
 # [howto, manual, or own class]).
 latex_documents = [
@@ -147,7 +147,7 @@ man_pages = [
 
 # -- Options for Texinfo output ----------------------------------------
 
-# Grouping the document tree into Texinfo paths. List of tuples
+# Grouping the document tree into Texinfo selected_paths. List of tuples
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [

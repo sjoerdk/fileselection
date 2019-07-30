@@ -27,7 +27,7 @@ setup(
         'Natural Language :: English',
         'Programming Language :: Python :: 3.7',
     ],
-    description="Persistable lists of paths",
+    description="Persistable lists of selected_paths",
     install_requires=requirements,
     license="MIT license",
     long_description=readme + '\n\n' + history,
