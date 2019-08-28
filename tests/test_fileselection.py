@@ -5,10 +5,10 @@
 from pathlib import Path
 
 import pytest
-from fileselection.fileselection import (
+from fileselection.fileselectionfolder import (
     FileSelectionFile,
     NotRelativeToRootException,
-    FileSelection,
+    FileSelectionFolder,
     FileSelectionLoadError,
 )
 from tests import RESOURCE_PATH
@@ -18,11 +18,11 @@ def test_fileselection_file():
     """Very basic tests"""
 
     # initialise basic
-    _ = FileSelectionFile(datafile=RESOURCE_PATH)
+    _ = FileSelectionFile(data_file_path=RESOURCE_PATH)
 
     # initialise with description and file list
     selection = FileSelectionFile(
-        datafile=RESOURCE_PATH,
+        data_file_path=RESOURCE_PATH,
         description="a test selection",
         selected_paths=["selected_paths/file1", "selected_paths/file2"],
     )
@@ -36,7 +36,9 @@ def test_absolute_vs_relative_paths():
     path1 = root_path / "file1"
     path2 = root_path / "file2"
     assert path1.is_absolute()
-    selection = FileSelectionFile(datafile=root_path, selected_paths=[path1, path2])
+    selection = FileSelectionFile(
+        data_file_path=root_path, selected_paths=[path1, path2]
+    )
 
     # but selected_paths should have been stored as relative
     assert len(selection.selected_paths) == 2
@@ -52,14 +54,14 @@ def test_absolute_vs_relative_path_exception():
     path2 = Path("/some_other_absolute_path/file2")
     assert path2.is_absolute()
     with pytest.raises(NotRelativeToRootException):
-        _ = FileSelectionFile(datafile=root_path, selected_paths=[path1, path2])
+        _ = FileSelectionFile(data_file_path=root_path, selected_paths=[path1, path2])
 
 
 def test_persisting_to_disk(tmpdir):
     """Load and save a FileSelectionFile """
     datafile = tmpdir / ".fileselection"
     selection = FileSelectionFile(
-        datafile=datafile,
+        data_file_path=datafile,
         description="a test selection",
         selected_paths=["selected_paths/file1", "selected_paths/file2"],
     )
@@ -77,7 +79,7 @@ def test_persisting_to_disk_tricky_values(tmpdir):
     """Load and save a FileSelectionFile with accolades, newlines and cyrillic """
     datafile = tmpdir / ".fileselection"
     selection = FileSelectionFile(
-        datafile=datafile,
+        data_file_path=datafile,
         description='a test: #)%*(I#JF Very nasty {is this escaped?} "" \nselection',
         selected_paths=["selected_paths/file1", "selected_paths/Ба́бушка.txt"],
     )
@@ -96,30 +98,36 @@ def test_persisting_to_disk_tricky_values(tmpdir):
 
 
 def test_file_selection(tmpdir):
-    tmpdir = Path("/tmp")
     paths = [tmpdir / "test1", tmpdir / "test2"]
     description = "Some description"
-    selection = FileSelection(
-        root_path=tmpdir, description=description, selected_paths=paths
-    )
-    assert selection.id is None
-    selection.save()
-    assert selection.id is not None
+    selection_folder = FileSelectionFolder(path=tmpdir)
+    assert selection_folder.has_file_selection() is False
 
-    loaded = FileSelection.load(tmpdir)
+    fileselection = FileSelectionFile(
+        data_file_path=Path(tmpdir) / "fileselection",
+        description=description,
+        selected_paths=paths,
+    )
+
+    selection_folder.save_file_selection(fileselection)
+    assert fileselection.id is not None
+    assert selection_folder.has_file_selection()
+
+    loaded = selection_folder.load_file_selection()
     assert loaded.selected_paths_absolute == paths
     assert loaded.description == description
+    assert loaded.id == fileselection.id
 
 
 def test_file_selection_non_existant(tmpdir):
-    """Try to load a FileSelection from a folder where there is none"""
+    """Try to load a FileSelectionFolder from a folder where there is none"""
 
     with pytest.raises(FileNotFoundError):
-        FileSelection.load(tmpdir)
+        FileSelectionFolder(tmpdir).load_file_selection()
 
     # and try loading from a non-existant folder
     with pytest.raises(FileNotFoundError):
-        FileSelection.load("/non_existant_folder")
+        FileSelectionFolder("/non_existant_folder").load_file_selection()
 
 
 def test_file_selection_barely_valid_format():
@@ -145,11 +153,11 @@ def test_file_selection_barely_valid_format():
         ("missing_fields.txt", FileSelectionLoadError),
         ("invalid_newlines.txt", FileSelectionLoadError),
         ("forgot_dash.txt", FileSelectionLoadError),
-        ("not_relative_path.txt", NotRelativeToRootException)
+        ("not_relative_path.txt", NotRelativeToRootException),
     ],
 )
 def test_file_selection_invalid_format(input_file, expected_exception):
-    """FileSelection files can be edited. And of course edited badly. Check whether users are getting proper
+    """FileSelectionFolder files can be edited. And of course edited badly. Check whether users are getting proper
     feedback """
 
     datafile_path = RESOURCE_PATH / "fileselections" / input_file

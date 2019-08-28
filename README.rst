@@ -34,7 +34,7 @@ file selections. Users need to be able to make arbitrarily complex selections wi
 number of methods: using a command line interface, editing in a text editor, or a full
 GUI. The server processing order is unknown and it might take a long time before
 processing starts.
-FileSelection objects in folders make it possible to separate selection from server
+FileSelectionFolder objects in folders make it possible to separate selection from server
 processing.
 
 

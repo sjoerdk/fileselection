@@ -61,22 +61,22 @@ class YamlSavable:
 
 
 class FileSelectionFile(YamlSavable):
-    """ A list of relative file selected_paths that can be saved to a file
+    """ A list of relative file selected_paths that can be saved to and loaded from stream
     """
 
     def __init__(
-        self, datafile, description="", selected_paths=None, selection_id=None
+        self, data_file_path, description="", selected_paths=None, selection_id=None
     ):
         """
 
         Parameters
         ----------
-        datafile: PathLike
+        data_file_path: PathLike
             path to the file where this file selection is stored
         description: str, optional
             Human readable description of this file selection. Defaults to empty string
         selected_paths: List[PathLike], optional
-            list of file selected_paths that are selected. Will be saved relative to datafile. Defaults to empty list
+            list of file selected_paths that are selected. Will be saved relative to data_file_path. Defaults to empty list
         selection_id: str, optional
             unique id for this selection. Defaults to uuid4
         """
@@ -84,7 +84,7 @@ class FileSelectionFile(YamlSavable):
             self.id = selection_id
         else:
             self.id = str(uuid4())
-        self.datafile = Path(datafile)
+        self.data_file_path = Path(data_file_path)
         self.description = description
         if not selected_paths:
             selected_paths = []
@@ -93,7 +93,8 @@ class FileSelectionFile(YamlSavable):
         )  # convert to Path and make relative
 
     def make_relative(self, paths):
-        """Make all given selected_paths relative to this selections datafile. Raise exception if this seems to be not possible
+        """Make all given selected_paths relative to this selections data_file_path. Raise exception if this seems to be not
+        possible
 
         Parameters
         ----------
@@ -104,12 +105,12 @@ class FileSelectionFile(YamlSavable):
         Returns
         -------
         List[Paths]
-            All input selected_paths relative to datafile
+            All input selected_paths relative to data_file_path
 
         Raises
         ------
         NotRelativeToRootException
-            If any of the selected_paths given is not relative to datafile
+            If any of the selected_paths given is not relative to data_file_path
 
 
         """
@@ -129,8 +130,12 @@ class FileSelectionFile(YamlSavable):
         return relative_paths
 
     @property
+    def selected_paths_absolute(self):
+        return [self.root_path / x for x in self.selected_paths]
+
+    @property
     def root_path(self):
-        return self.datafile.parent
+        return self.data_file_path.parent
 
     def to_dict(self):
         """
@@ -151,7 +156,7 @@ class FileSelectionFile(YamlSavable):
     @classmethod
     def from_dict(cls, dict_in, datafile):
         return cls(
-            datafile=datafile,
+            data_file_path=datafile,
             selection_id=dict_in["id"],
             description=dict_in["description"],
             selected_paths=[x for x in dict_in["selected_paths"] if x is not None],
@@ -159,14 +164,14 @@ class FileSelectionFile(YamlSavable):
 
     @classmethod
     def load(cls, f, datafile):
-        """Overwrite base load to be able to add datafile location to the loaded FileSelectionFile
+        """Overwrite base load to be able to add data_file_path location to the loaded FileSelectionFile
 
         Parameters
         ----------
         f: Stream
             Load from this stream
         datafile: PathLike
-            Set this path as root_path in returned object
+            Set this path as path in returned object
 
         Returns
         -------
@@ -190,14 +195,14 @@ class FileSelectionFile(YamlSavable):
             raise FileSelectionLoadError(msg)
 
 
-class FileSelection:
+class FileSelectionFolder:
     """List of relative files in a certain folder. Can be saved and loaded.
 
     Notes
     -----
     One abstraction level above FileSelectionFile. Makes three simplifying assumptions:
     * Only one selection per folder. Filename id fixed
-    * Initialization: root_path fully determines which file selection to load
+    * Initialization: path fully determines which file selection to load
     * Loading and saving is always file-based, no loading from file-like objects or streams
 
     """
@@ -205,51 +210,19 @@ class FileSelection:
     DATA_FILE_NAME = ".fileselection"
 
     def __init__(
-        self, root_path, description="", selected_paths=None, selection_id=None
+        self, path
     ):
         """
 
         Parameters
         ----------
-        root_path: PathLike
+        path: PathLike
             All paths in this selection are relative to this folder
-        description: str, optional
-            Human readable description of this file selection. Defaults to empty string
-        selected_paths: List[PathLike], optional
-            list of file selected_paths that are selected. Will be saved relative to datafile. Defaults to empty list
-        selection_id: str, optional
-            unique id for this selection. Defaults to uuid4
-        """
-        self.root_path = Path(root_path)
-        self.description = description
-        self.selected_paths = [x for x in map(Path, selected_paths)]
-        self.id = selection_id
-
-    @property
-    def selected_paths_absolute(self):
-        """
-
-        Returns
-        -------
-        List[Path]
-        Absolute path to all files in this selection
 
         """
-        return [self.root_path / x for x in self.selected_paths]
+        self.path = Path(path)
 
-    def save(self):
-        data = FileSelectionFile(
-            datafile=self.get_data_file_path(self.root_path),
-            description=self.description,
-            selected_paths=self.selected_paths,
-            selection_id=self.id,
-        )
-        with open(data.datafile, "w") as f:
-            data.save(f)
-        self.id = data.id
-
-    @classmethod
-    def get_data_file_path(cls, root_path):
+    def get_data_file_path(self):
         """
 
         Parameters
@@ -263,36 +236,38 @@ class FileSelection:
             Full path to the data file that stores the file selection info
 
         """
-        return Path(root_path) / cls.DATA_FILE_NAME
+        return self.path / self.DATA_FILE_NAME
 
-    @classmethod
-    def load(cls, root_path):
-        """
+    def has_file_selection(self):
+        return self.get_data_file_path().exists()
 
-        Parameters
-        ----------
-        root_path: PathLike
-            Folder to load fileselection from
+    def load_file_selection(self):
+        """Load a FileSelectionFile from this folder
 
         Raises
         ------
         FileNotFoundError
-        When root_path cannot be found or no file selection is defined in root_path
+        When path cannot be found or no file selection is defined in path
 
 
         Returns
         -------
-        FileSelection
+        FileSelectionFile
         """
-        data_file_path = cls.get_data_file_path(root_path)
+        data_file_path = self.get_data_file_path()
         with open(data_file_path, "r") as f:
-            data = FileSelectionFile.load(f, data_file_path)
-        return cls(
-            root_path=root_path,
-            description=data.description,
-            selected_paths=data.selected_paths,
-            selection_id=data.id,
-        )
+            return FileSelectionFile.load(f, data_file_path)
+
+    def save_file_selection(self, selection):
+        """Write the given file selection to this folder
+
+        Parameters
+        ----------
+        selection: FileSelectionFile
+
+        """
+        with open(self.get_data_file_path(), 'w') as f:
+            selection.save(f)
 
 
 class FileSelectionException(Exception):

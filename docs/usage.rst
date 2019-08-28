@@ -23,10 +23,10 @@ You can then do the following
 .. code-block:: console
 
 
-    from fileselection import FileSelection
+    from fileselection import FileSelectionFolder
 
     # intialise a fileselection in folder
-    selection = FileSelection('/myfiles', description='a test')
+    selection = FileSelectionFolder('/myfiles', description='a test')
 
     selection.files
     >>> []
@@ -39,7 +39,7 @@ You can then do the following
     selection.save()  # saves selection to '/myfiles/.fileselection'
 
     # later on you can load a collection again by referencing the folder only
-    loaded = FileSelection.load('/myfiles')
+    loaded = FileSelectionFolder.load('/myfiles')
     loaded.description
     >>> 'a test'
 
