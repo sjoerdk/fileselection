@@ -5,7 +5,7 @@
 from pathlib import Path
 
 import pytest
-from fileselection.fileselectionfolder import (
+from fileselection.fileselection import (
     FileSelectionFile,
     NotRelativeToRootException,
     FileSelectionFolder,
