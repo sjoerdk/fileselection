@@ -207,7 +207,7 @@ class FileSelectionFolder:
 
     """
 
-    DATA_FILE_NAME = ".fileselection"
+    DATA_FILE_NAME = "fileselection.txt"
 
     def __init__(
         self, path
@@ -248,7 +248,6 @@ class FileSelectionFolder:
         ------
         FileNotFoundError
         When path cannot be found or no file selection is defined in path
-
 
         Returns
         -------
