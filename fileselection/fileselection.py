@@ -257,6 +257,33 @@ class FileSelectionFolder:
         with open(data_file_path, "r") as f:
             return FileSelectionFile.load(f, data_file_path)
 
+    def load_file_selection_or_new(self, description='auto-generated',
+                                   selected_paths=None):
+        """Try to load default file selection from this folder. Return a new one if
+        none was found.
+
+        Parameters
+        ----------
+        description: str, optional
+            Set this description for any newly created SelectionFile. Defaults
+            to 'auto-generated'
+        selected_paths: List[Pathlike], optional
+            Set these paths for any newly created SelectionFile
+
+        Returns
+        -------
+        FileSelectionFile
+        """
+        try:
+            return self.load_file_selection()
+        except FileNotFoundError:
+            if not selected_paths:
+                selected_paths = []
+            return FileSelectionFile(
+                    data_file_path=self.get_data_file_path(),
+                    description=description,
+                    selected_paths=selected_paths)
+
     def save_file_selection(self, selection):
         """Write the given file selection to this folder
 
