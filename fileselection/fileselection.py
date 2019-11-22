@@ -137,6 +137,47 @@ class FileSelectionFile(YamlSavable):
     def root_path(self):
         return self.data_file_path.parent
 
+    def add(self, paths):
+        """Add paths to selection
+
+        Parameters
+        ----------
+        paths: List[Pathlike]
+            Add these paths to selected paths. Will not add duplicates.
+            Paths can be absolute or relative. If relative, it will be assumed
+            relative to selection root path
+
+        Raises
+        ------
+        NotRelativeToRootException
+            When any path is not inside this selections' root path
+        """
+        paths = list(map(Path, paths))
+        relative_paths = self.make_relative(paths)
+        self.selected_paths = list(
+            set(self.selected_paths).union(set(relative_paths)))
+
+    def remove(self, paths):
+        """Removes paths from selection
+
+        Parameters
+        ----------
+        paths: List[Pathlike]
+            Remove these paths from selected paths. Paths not in selection will
+            be skipped over. Paths can be absolute or relative. If relative,
+            it will be assumed relative to selection root path
+
+        Raises
+        ------
+        NotRelativeToRootException
+            When any path is not inside this selections' root path
+        """
+
+        paths = list(map(Path, paths))
+        relative_paths = self.make_relative(paths)
+        self.selected_paths = list(
+            set(self.selected_paths).difference(set(relative_paths)))
+
     def to_dict(self):
         """
 

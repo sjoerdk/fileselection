@@ -14,6 +14,61 @@ from fileselection.fileselection import (
 from tests import RESOURCE_PATH
 
 
+@pytest.fixture()
+def a_file_selection_file():
+    # initialising with absolute selected_paths should work
+    root_path = Path("/fileselection_root_path/test1")
+    path1 = root_path / "file1"
+    path2 = root_path / "file2"
+    return FileSelectionFile(data_file_path=root_path / ".fileselection",
+                             selected_paths=[path1, path2])
+
+
+def test_add(a_file_selection_file):
+    """Adding paths should not add duplicates, and not care about
+    whether they are absolute or relative"""
+    assert len(a_file_selection_file.selected_paths) == 2
+
+    # add a relative file
+    a_file_selection_file.add(['file3'])
+    assert len(a_file_selection_file.selected_paths) == 3
+
+    # adding the same should not do anything, igonre duplicates
+    a_file_selection_file.add(['file3'])
+    assert len(a_file_selection_file.selected_paths) == 3
+
+    # adding a absolute file path should be possible
+    a_file_selection_file.add([a_file_selection_file.root_path / 'file4'])
+    assert len(a_file_selection_file.selected_paths) == 4
+
+    # provided it is within selection root path. If not, raise exception
+    with pytest.raises(NotRelativeToRootException):
+        a_file_selection_file.add(['/different_root/file5'])
+
+
+def test_remove(a_file_selection_file):
+    """removing paths should not care about absolute vs relative, and not
+    raise exceptions for removing non-existant paths"""
+    assert len(a_file_selection_file.selected_paths) == 2
+
+    # remove relative file
+    a_file_selection_file.remove(['file1'])
+    assert len(a_file_selection_file.selected_paths) == 1
+
+    # removing non existent file should not raise anything
+    a_file_selection_file.remove(['file18'])
+    assert len(a_file_selection_file.selected_paths) == 1
+
+    # trying to remove a path that is not in root is weird. Raise exception
+    with pytest.raises(NotRelativeToRootException):
+        a_file_selection_file.remove(['/absolute_wrong_path/file18'])
+    assert len(a_file_selection_file.selected_paths) == 1
+
+    # removing absolute path should work
+    a_file_selection_file.remove([a_file_selection_file.root_path / 'file2'])
+    assert len(a_file_selection_file.selected_paths) == 0
+
+
 def test_fileselection_file():
     """Very basic tests"""
 
@@ -22,7 +77,7 @@ def test_fileselection_file():
 
     # initialise with description and file list
     selection = FileSelectionFile(
-        data_file_path=RESOURCE_PATH,
+        data_file_path=RESOURCE_PATH / '.fileselection',
         description="a test selection",
         selected_paths=["selected_paths/file1", "selected_paths/file2"],
     )
@@ -37,7 +92,7 @@ def test_absolute_vs_relative_paths():
     path2 = root_path / "file2"
     assert path1.is_absolute()
     selection = FileSelectionFile(
-        data_file_path=root_path, selected_paths=[path1, path2]
+        data_file_path=root_path / '.fileselection', selected_paths=[path1, path2]
     )
 
     # but selected_paths should have been stored as relative
@@ -54,7 +109,8 @@ def test_absolute_vs_relative_path_exception():
     path2 = Path("/some_other_absolute_path/file2")
     assert path2.is_absolute()
     with pytest.raises(NotRelativeToRootException):
-        _ = FileSelectionFile(data_file_path=root_path, selected_paths=[path1, path2])
+        _ = FileSelectionFile(data_file_path=root_path / '.fileselection',
+                              selected_paths=[path1, path2])
 
 
 def test_persisting_to_disk(tmpdir):
@@ -99,7 +155,7 @@ def test_persisting_to_disk_tricky_values(tmpdir):
     """Load and save a FileSelectionFile with accolades, newlines and cyrillic """
     datafile = tmpdir / ".fileselection"
     selection = FileSelectionFile(
-        data_file_path=datafile,
+        data_file_path=datafile / ".fileselection",
         description='a test: #)%*(I#JF Very nasty {is this escaped?} "" \nselection',
         selected_paths=["selected_paths/file1", "selected_paths/Ба́бушка.txt"],
     )
