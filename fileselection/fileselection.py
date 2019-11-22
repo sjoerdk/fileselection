@@ -264,12 +264,8 @@ class FileSelectionFolder:
         self.path = Path(path)
 
     def get_data_file_path(self):
-        """
-
-        Parameters
-        ----------
-        root_path: PathLike
-            Path in which the data file should be located
+        """The full path to a datafile in this folder. This path might or might
+        not exist
 
         Returns
         -------
@@ -298,10 +294,9 @@ class FileSelectionFolder:
         with open(data_file_path, "r") as f:
             return FileSelectionFile.load(f, data_file_path)
 
-    def load_file_selection_or_new(self, description='auto-generated',
+    def create_file_selection_file(self, description='auto-generated',
                                    selected_paths=None):
-        """Try to load default file selection from this folder. Return a new one if
-        none was found.
+        """Returns a new, unsaved file selection file in this folder.
 
         Parameters
         ----------
@@ -315,15 +310,12 @@ class FileSelectionFolder:
         -------
         FileSelectionFile
         """
-        try:
-            return self.load_file_selection()
-        except FileNotFoundError:
-            if not selected_paths:
-                selected_paths = []
-            return FileSelectionFile(
-                    data_file_path=self.get_data_file_path(),
-                    description=description,
-                    selected_paths=selected_paths)
+        if not selected_paths:
+            selected_paths = []
+        return FileSelectionFile(
+                data_file_path=self.get_data_file_path(),
+                description=description,
+                selected_paths=selected_paths)
 
     def save_file_selection(self, selection):
         """Write the given file selection to this folder

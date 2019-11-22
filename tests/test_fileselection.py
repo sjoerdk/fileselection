@@ -131,24 +131,19 @@ def test_persisting_to_disk(tmpdir):
     assert loaded.root_path == tmpdir
 
 
-def test_selection_folder_load_or_new(tmpdir):
+def test_create_filse_selection(tmpdir):
     folder = FileSelectionFolder(tmpdir)
 
     # try to load selection or new in an assertedly empty dir. This should create
     assert not folder.has_file_selection()
-    selection = folder.load_file_selection_or_new(
+    selection = folder.create_file_selection_file(
         description="test", selected_paths=[tmpdir / "somepath.txt"]
     )
     assert selection.description == "test"
     assert len(selection.selected_paths) == 1
     folder.save_file_selection(selection)
 
-    # now there is a selection in this folder. selection or new should not create
-    selection = folder.load_file_selection_or_new(
-        description="test2", selected_paths=[tmpdir / "somepath2.txt"]
-    )
-    assert selection.description == "test"
-    assert len(selection.selected_paths) == 1
+    assert folder.has_file_selection()
 
 
 def test_persisting_to_disk_tricky_values(tmpdir):
