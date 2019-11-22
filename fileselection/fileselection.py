@@ -61,7 +61,8 @@ class YamlSavable:
 
 
 class FileSelectionFile(YamlSavable):
-    """ A list of relative file selected_paths that can be saved to and loaded from stream
+    """ A list of relative file selected_paths that can be saved to and loaded from
+    stream
     """
 
     def __init__(
@@ -234,6 +235,11 @@ class FileSelectionFile(YamlSavable):
         except KeyError as e:
             msg = f'Expected to find line with "{e.args[0]}:" but could not find this in {datafile} original error: {e}'
             raise FileSelectionLoadError(msg)
+
+    def save_to_file(self):
+        """Save this selection to its datafile. Convenience."""
+        with open(self.data_file_path, 'w') as f:
+            self.save(f)
 
 
 class FileSelectionFolder:

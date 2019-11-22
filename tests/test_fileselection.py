@@ -121,8 +121,7 @@ def test_persisting_to_disk(tmpdir):
         description="a test selection",
         selected_paths=["selected_paths/file1", "selected_paths/file2"],
     )
-    with open(datafile, "w") as f:
-        selection.save(f)
+    selection.save_to_file()
 
     with open(datafile, "r") as f:
         loaded = FileSelectionFile.load(f, datafile=datafile)
