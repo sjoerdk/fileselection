@@ -224,6 +224,7 @@ def test_file_selection_barely_valid_format():
         ("invalid_newlines.txt", FileSelectionLoadError),
         ("forgot_dash.txt", FileSelectionLoadError),
         ("not_relative_path.txt", NotRelativeToRootException),
+        ("missing_several.txt", FileSelectionLoadError),
     ],
 )
 def test_file_selection_invalid_format(input_file, expected_exception):
@@ -234,4 +235,3 @@ def test_file_selection_invalid_format(input_file, expected_exception):
     with pytest.raises(expected_exception) as e:
         with open(datafile_path, "r") as f:
             FileSelectionFile.load(f, datafile_path)
-    test = 1

@@ -235,6 +235,8 @@ class FileSelectionFile(YamlSavable):
         except KeyError as e:
             msg = f'Expected to find line with "{e.args[0]}:" but could not find this in {datafile} original error: {e}'
             raise FileSelectionLoadError(msg)
+        except TypeError as e:
+            raise FileSelectionLoadError(f"Error loading selection file: {e}")
 
     def save_to_file(self):
         """Save this selection to its datafile. Convenience."""
